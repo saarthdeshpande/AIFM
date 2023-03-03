@@ -216,6 +216,7 @@ namespace far_memory {
         }
 
         void consume_array_entry(const ArrayEntry &entry) {
+            auto core_num = get_core_num();
             auto start_encr = rdtsc();
             std::string ciphertext;
             CryptoPP::StreamTransformationFilter stfEncryptor(
