@@ -231,7 +231,7 @@ namespace far_memory {
             auto compressed_len = compressed.size();
             ACCESS_ONCE(compressed_len);
             auto end_cmpr = rdtsc();
-            cmpr_lats[core_num][(lats_idx[core_num].c++) % kLatsWinSize] = end_cmpr - start_cmpr;
+            compr_lats[core_num][(lats_idx[core_num].c++) % kLatsWinSize] = end_cmpr - start_cmpr;
         }
 
         void print_perf() {
