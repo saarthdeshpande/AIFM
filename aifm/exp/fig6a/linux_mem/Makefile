@@ -1,6 +1,7 @@
 AIFM_PATH=../../../
-SHENANGO_PATH=$(AIFM_PATH)/../shenango
-include $(SHENANGO_PATH)/shared.mk
+SHENANGO_PATH=$(AIFM_PATH)/../caladan-arkose
+ROOT_PATH=$(SHENANGO_PATH)
+include $(SHENANGO_PATH)/build/shared.mk
 
 librt_libs = $(SHENANGO_PATH)/bindings/cc/librt++.a
 INC += -I$(SHENANGO_PATH)/bindings/cc -I$(AIFM_PATH)/inc -I$(SHENANGO_PATH)/ksched \

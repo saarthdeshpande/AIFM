@@ -101,5 +101,5 @@ static uint32_t align_to(uint32_t n, uint32_t factor);
 static uint64_t align_to(uint64_t n, uint64_t factor);
 void breakpoint();
 }; // namespace helpers
-
+#define very_unlikely(x) __builtin_expect_with_probability(!!(x), 0, 1.0)
 #include "internal/helpers.ipp"

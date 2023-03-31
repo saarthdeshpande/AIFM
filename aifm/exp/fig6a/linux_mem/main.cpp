@@ -10,11 +10,11 @@ extern "C" {
 #include "helpers.hpp"
 //#include "manager.hpp"
 #include "snappy.h"
-#include "stats.hpp"
+//#include "stats.hpp"
 #include "zipf.hpp"
 
 // crypto++
-#include "cryptopp/aes.h"
+#include "crypto++/aes.h"
 #include "cryptopp/filters.h"
 #include "cryptopp/modes.h"
 
@@ -136,7 +136,7 @@ private:
         BUG_ON(len <= 0);
         preempt_disable();
         auto guard = helpers::finally([&]() { preempt_enable(); });
-        auto &generator = *generators[get_core_num()];
+        auto &generator = *generators[get_current_affinity()];
         std::uniform_int_distribution<int> distribution('a', 'z' + 1);
         for (uint32_t i = 0; i < len; i++) {
             data[i] = char(distribution(generator));
@@ -152,7 +152,7 @@ private:
     inline uint32_t random_uint32() {
         preempt_disable();
         auto guard = helpers::finally([&]() { preempt_enable(); });
-        auto &generator = *generators[get_core_num()];
+        auto &generator = *generators[get_current_affinity()];
         std::uniform_int_distribution<uint32_t> distribution(
                 0, std::numeric_limits<uint32_t>::max());
         return distribution(generator);
@@ -198,7 +198,7 @@ private:
         }
         preempt_disable();
         zipf_table_distribution<> zipf(kNumReqs, kZipfParamS);
-        auto &generator = generators[get_core_num()];
+        auto &generator = generators[get_current_affinity()];
         constexpr uint32_t kPerCoreWinInterval = kReqSeqLen / helpers::kNumCPUs;
         for (uint32_t i = 0; i < kReqSeqLen; i++) {
             auto rand_idx = zipf(*generator);
@@ -216,7 +216,7 @@ private:
 //        }
 
     void consume_array_entry(const ArrayEntry &entry) {
-        auto core_num = get_core_num();
+        auto core_num = get_current_affinity();
         auto start_encr = rdtsc();
         std::string ciphertext;
         CryptoPP::StreamTransformationFilter stfEncryptor(
@@ -305,7 +305,7 @@ private:
                         preempt_enable();
                     }
                     preempt_disable();
-                    auto core_num = get_core_num();
+                    auto core_num = get_current_affinity();
                     auto req_idx =
                             all_zipf_req_indices[core_num][per_core_req_idx[core_num].c];
                     if (unlikely(++per_core_req_idx[core_num].c == kReqSeqLen)) {
@@ -338,7 +338,7 @@ private:
                     }
                     auto end = rdtsc();
                     preempt_disable();
-                    core_num = get_core_num();
+                    core_num = get_current_affinity();
                     lats[core_num][(lats_idx[core_num].c++) % kLatsWinSize] = end - start;
                     preempt_enable();
                     ACCESS_ONCE(req_cnts[tid].c)++;
