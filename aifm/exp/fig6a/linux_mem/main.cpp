@@ -58,7 +58,7 @@ private:
     constexpr static uint32_t kArrayEntrySize = 8192;     // 8 K
 
     // Runtime.
-    constexpr static uint32_t kNumMutatorThreads = 2;
+    constexpr static uint32_t kNumMutatorThreads = 1;
     constexpr static double kZipfParamS = 0.85;
     constexpr static uint32_t kNumKeysPerRequest = 32;
     constexpr static uint32_t kNumReqs = kNumKVPairs / kNumKeysPerRequest;
