@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# AIFM Core.
-make clean
-make -j$(nproc) || { echo 'Failed to build AIFM Core.'; exit 1; }
-
-# Far-Mem Snappy.
+# Snappy.
 cd snappy
 rm -rf build
 mkdir build
