@@ -4,7 +4,7 @@
 #include <random>
 #include <vector>
 
-namespace far_memory {
+//namespace far_memory {
 
 /**
  * Example usage:
@@ -50,6 +50,6 @@ private:
   /** Initialize the probability mass function */
   IntType init(const IntType n, const RealType q);
 };
-} // namespace far_memory
+//} // namespace far_memory
 
 #include "internal/zipf.ipp"

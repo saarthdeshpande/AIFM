@@ -1,6 +1,6 @@
 #pragma once
 
-namespace far_memory {
+//namespace far_memory {
 
 FORCE_INLINE uint32_t Slab::get_slab_idx(uint32_t size) {
   auto rounded_size = helpers::round_up_power_of_two(size);
@@ -12,4 +12,4 @@ FORCE_INLINE uint32_t Slab::get_slab_idx(uint32_t size) {
 FORCE_INLINE uint32_t Slab::get_slab_size(uint32_t idx) {
   return (1 << (kMinSlabClassShift + idx));
 }
-} // namespace far_memory
+//} // namespace far_memory

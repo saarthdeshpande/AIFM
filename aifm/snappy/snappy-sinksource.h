@@ -29,25 +29,18 @@
 #ifndef THIRD_PARTY_SNAPPY_SNAPPY_SINKSOURCE_H_
 #define THIRD_PARTY_SNAPPY_SNAPPY_SINKSOURCE_H_
 
-#include "array.hpp"
-#include "deref_scope.hpp"
-
-#include <cstdint>
-#include <memory>
 #include <stddef.h>
-
-using namespace far_memory;
 
 namespace snappy {
 
 // A Sink is an interface that consumes a sequence of bytes.
 class Sink {
-public:
-  Sink() {}
+ public:
+  Sink() { }
   virtual ~Sink();
 
   // Append "bytes[0,n-1]" to this.
-  virtual void Append(const char *bytes, size_t n) = 0;
+  virtual void Append(const char* bytes, size_t n) = 0;
 
   // Returns a writable buffer of the specified length for appending.
   // May return a pointer to the caller-owned scratch buffer which
@@ -64,7 +57,7 @@ public:
   // interior pointer of the returned array to Append().
   //
   // The default implementation always returns the scratch buffer.
-  virtual char *GetAppendBuffer(size_t length, char *scratch);
+  virtual char* GetAppendBuffer(size_t length, char* scratch);
 
   // For higher performance, Sink implementations can provide custom
   // AppendAndTakeOwnership() and GetAppendBufferVariable() methods.
@@ -77,10 +70,9 @@ public:
   //
   // The default implementation just calls Append and frees "bytes".
   // Other implementations may avoid a copy while appending the buffer.
-  virtual void AppendAndTakeOwnership(char *bytes, size_t n,
-                                      void (*deleter)(void *, const char *,
-                                                      size_t),
-                                      void *deleter_arg);
+  virtual void AppendAndTakeOwnership(
+      char* bytes, size_t n, void (*deleter)(void*, const char*, size_t),
+      void *deleter_arg);
 
   // Returns a writable buffer for appending and writes the buffer's capacity to
   // *allocated_size. Guarantees *allocated_size >= min_size.
@@ -105,21 +97,20 @@ public:
   // interior pointer to Append().
   //
   // The default implementation always returns the scratch buffer.
-  virtual char *GetAppendBufferVariable(size_t min_size,
-                                        size_t desired_size_hint, char *scratch,
-                                        size_t scratch_size,
-                                        size_t *allocated_size);
+  virtual char* GetAppendBufferVariable(
+      size_t min_size, size_t desired_size_hint, char* scratch,
+      size_t scratch_size, size_t* allocated_size);
 
-private:
+ private:
   // No copying
-  Sink(const Sink &);
-  void operator=(const Sink &);
+  Sink(const Sink&);
+  void operator=(const Sink&);
 };
 
 // A Source is an interface that yields a sequence of bytes
 class Source {
-public:
-  Source() {}
+ public:
+  Source() { }
   virtual ~Source();
 
   // Return the number of bytes left to read from the source
@@ -138,121 +129,54 @@ public:
   // if this ByteSource is a view on a substring of a larger source).
   // The caller is responsible for ensuring that it only reads the
   // Available() bytes.
-  virtual const char *Peek(size_t *len) = 0;
+  virtual const char* Peek(size_t* len) = 0;
 
   // Skip the next n bytes.  Invalidates any buffer returned by
   // a previous call to Peek().
   // REQUIRES: Available() >= n
   virtual void Skip(size_t n) = 0;
 
-  virtual int Reset() { return -1; }
-
-private:
+ private:
   // No copying
-  Source(const Source &);
-  void operator=(const Source &);
-};
-
-struct FileBlock {
-  constexpr static uint32_t kSize = 32768;
-  uint8_t data[kSize];
-};
-
-template <uint64_t kNumBlocks, bool TpAPI>
-class FarMemArraySource : public Source {
-public:
-  FarMemArraySource(const uint64_t kInputLen,
-                    Array<FileBlock, kNumBlocks> *fm_array_ptr)
-      : kInputLen_(kInputLen), fm_array_ptr_(fm_array_ptr) {}
-  ~FarMemArraySource() {}
-  size_t Available() const;
-  const char *Peek(size_t *len);
-  void Skip(size_t n);
-  int Reset();
-
-private:
-  const uint64_t kInputLen_;
-  Array<FileBlock, kNumBlocks> *fm_array_ptr_;
-  uint64_t idx_ = 0;
-  FileBlock block_;
+  Source(const Source&);
+  void operator=(const Source&);
 };
 
 // A Source implementation that yields the contents of a flat array
 class ByteArraySource : public Source {
-public:
-  ByteArraySource(const char *p, size_t n)
-      : ptr_(p), left_(n), orig_ptr_(p), orig_left_(n) {}
+ public:
+  ByteArraySource(const char* p, size_t n) : ptr_(p), left_(n) { }
   virtual ~ByteArraySource();
   virtual size_t Available() const;
-  virtual const char *Peek(size_t *len);
+  virtual const char* Peek(size_t* len);
   virtual void Skip(size_t n);
-  virtual int Reset();
-
-private:
-  const char *ptr_;
+ private:
+  const char* ptr_;
   size_t left_;
-  const char *orig_ptr_;
-  size_t orig_left_;
 };
 
 // A Sink implementation that writes to a flat array without any bound checks.
 class UncheckedByteArraySink : public Sink {
-public:
-  explicit UncheckedByteArraySink(char *dest) : dest_(dest) {}
+ public:
+  explicit UncheckedByteArraySink(char* dest) : dest_(dest) { }
   virtual ~UncheckedByteArraySink();
-  virtual void Append(const char *data, size_t n);
-  virtual char *GetAppendBuffer(size_t len, char *scratch);
-  virtual char *GetAppendBufferVariable(size_t min_size,
-                                        size_t desired_size_hint, char *scratch,
-                                        size_t scratch_size,
-                                        size_t *allocated_size);
-  virtual void AppendAndTakeOwnership(char *bytes, size_t n,
-                                      void (*deleter)(void *, const char *,
-                                                      size_t),
-                                      void *deleter_arg);
+  virtual void Append(const char* data, size_t n);
+  virtual char* GetAppendBuffer(size_t len, char* scratch);
+  virtual char* GetAppendBufferVariable(
+      size_t min_size, size_t desired_size_hint, char* scratch,
+      size_t scratch_size, size_t* allocated_size);
+  virtual void AppendAndTakeOwnership(
+      char* bytes, size_t n, void (*deleter)(void*, const char*, size_t),
+      void *deleter_arg);
 
   // Return the current output pointer so that a caller can see how
   // many bytes were produced.
   // Note: this is not a Sink method.
-  char *CurrentDestination() const { return dest_; }
-
-private:
-  char *dest_;
+  char* CurrentDestination() const { return dest_; }
+ private:
+  char* dest_;
 };
 
-template <uint64_t kNumBlocks, bool TpAPI>
-size_t FarMemArraySource<kNumBlocks, TpAPI>::Available() const {
-  return kInputLen_ - idx_;
-}
+}  // namespace snappy
 
-template <uint64_t kNumBlocks, bool TpAPI>
-const char *FarMemArraySource<kNumBlocks, TpAPI>::Peek(size_t *len) {
-  auto block_id = idx_ / FileBlock::kSize;
-  auto block_offset = idx_ % FileBlock::kSize;
-  char *block_ptr;
-  if constexpr (TpAPI) {
-    block_ = fm_array_ptr_->read(block_id);
-    block_ptr = (char *)(&block_);
-  } else {
-    DerefScope scope;
-    auto &block = fm_array_ptr_->at(scope, block_id);
-    block_ptr = (char *)(&block);
-  }
-  *len = std::min(Available(), FileBlock::kSize - block_offset);
-  return block_ptr + block_offset;
-}
-
-template <uint64_t kNumBlocks, bool TpAPI>
-void FarMemArraySource<kNumBlocks, TpAPI>::Skip(size_t n) {
-  idx_ += n;
-}
-
-template <uint64_t kNumBlocks, bool TpAPI>
-int FarMemArraySource<kNumBlocks, TpAPI>::Reset() {
-  idx_ = 0;
-  return 0;
-}
-
-} // namespace snappy
-
-#endif // THIRD_PARTY_SNAPPY_SNAPPY_SINKSOURCE_H_
+#endif  // THIRD_PARTY_SNAPPY_SNAPPY_SINKSOURCE_H_

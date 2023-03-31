@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-namespace far_memory {
+//namespace far_memory {
 
 LocalGenericConcurrentHopscotch::LocalGenericConcurrentHopscotch(
     uint32_t num_entries_shift, uint64_t data_size)
@@ -286,4 +286,4 @@ bool LocalGenericConcurrentHopscotch::remove(uint8_t key_len,
   return false;
 }
 
-} // namespace far_memory
+//} // namespace far_memory

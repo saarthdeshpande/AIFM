@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-namespace far_memory {
+//namespace far_memory {
 
 class Slab {
 public:
@@ -36,6 +36,6 @@ public:
   void free(uint8_t *ptr, uint32_t size);
 };
 
-} // namespace far_memory
+//} // namespace far_memory
 
 #include "internal/slab.ipp"

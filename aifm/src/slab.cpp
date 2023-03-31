@@ -1,6 +1,6 @@
 #include "slab.hpp"
 
-namespace far_memory {
+//namespace far_memory {
 
 Slab::Slab(uint8_t *base, uint64_t len) : base_(base), len_(len), cur_(base) {}
 
@@ -43,4 +43,4 @@ void Slab::free(uint8_t *ptr, uint32_t size) {
   slabs_[get_core_num()][slab_idx].push_back(ptr);
 }
 
-} // namespace far_memory
+//} // namespace far_memory

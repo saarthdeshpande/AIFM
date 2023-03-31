@@ -2,7 +2,7 @@
 
 #include "helpers.hpp"
 
-namespace far_memory {
+//namespace far_memory {
 
 template <class IntType, class RealType>
 FORCE_INLINE
@@ -46,4 +46,4 @@ FORCE_INLINE IntType zipf_table_distribution<IntType, RealType>::init(
   }
   return n;
 }
-} // namespace far_memory
+//} // namespace far_memory

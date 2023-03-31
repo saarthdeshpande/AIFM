@@ -39,15 +39,12 @@
 #ifndef THIRD_PARTY_SNAPPY_SNAPPY_H__
 #define THIRD_PARTY_SNAPPY_SNAPPY_H__
 
-#include <cstddef>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "array.hpp"
-#include "deref_scope.hpp"
-#include "snappy-sinksource.h"
 #include "snappy-stubs-public.h"
-
-using namespace far_memory;
 
 namespace snappy {
   class Source;
@@ -68,7 +65,7 @@ namespace snappy {
   // Also note that this leaves "*source" in a state that is unsuitable for
   // further operations, such as RawUncompress(). You will need to rewind
   // or recreate the source yourself before attempting any further calls.
-  bool GetUncompressedLength(Source* source, uint32* result);
+  bool GetUncompressedLength(Source* source, uint32_t* result);
 
   // ------------------------------------------------------------------------
   // Higher-level string based routines (should be sufficient for most users)
@@ -102,25 +99,6 @@ namespace snappy {
   // GetUncompressedLength(), but may be shorter if an error is
   // encountered.
   size_t UncompressAsMuchAsPossible(Source* compressed, Sink* uncompressed);
-
-
-  size_t Compress(Source *reader, size_t input_length, std::string *compressed);
-
-  template <uint64_t kNumBlocks, bool TpAPI>
-  size_t Compress(Array<FileBlock, kNumBlocks> *fm_array_ptr,
-                  size_t input_length, std::string *compressed) {
-    FarMemArraySource<kNumBlocks, TpAPI> reader(input_length, fm_array_ptr);
-    return Compress(&reader, input_length, compressed);
-  }
-
-  bool Uncompress(Source *reader, size_t n, std::string *uncompressed);
-
-  template <uint64_t kNumBlocks, bool TpAPI>
-  size_t Uncompress(Array<FileBlock, kNumBlocks> *fm_array_ptr,
-                    size_t input_length, std::string *compressed) {
-    FarMemArraySource<kNumBlocks, TpAPI> reader(input_length, fm_array_ptr);
-    return Uncompress(&reader, input_length, compressed);
-  }
 
   // ------------------------------------------------------------------------
   // Lower-level character array based routines.  May be useful for

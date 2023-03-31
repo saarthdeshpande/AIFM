@@ -9,7 +9,7 @@
 #include <memory>
 #include <optional>
 
-namespace far_memory {
+//namespace far_memory {
 
 class LocalGenericConcurrentHopscotch {
 private:
@@ -75,6 +75,6 @@ public:
   bool erase(const K &key);
 };
 
-} // namespace far_memory
+//} // namespace far_memory
 
 #include "internal/local_concurrent_hopscotch.ipp"

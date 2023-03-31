@@ -9,8 +9,7 @@ INC += -I$(SHENANGO_PATH)/bindings/cc -I$(AIFM_PATH)/inc -I$(SHENANGO_PATH)/ksch
 main_src = main.cpp
 main_obj = $(main_src:.cpp=.o)
 
-lib_src = $(wildcard $(AIFM_PATH)/src/*.cpp)
-lib_src := $(filter-out $(AIFM_PATH)/src/tcp_device_server.cpp,$(lib_src))
+lib_src = $(AIFM_PATH)/src/local_concurrent_hopscotch.cpp $(AIFM_PATH)/src/slab.cpp $(AIFM_PATH)/src/helpers.cpp $(AIFM_PATH)/src/MurmurHash3.cpp
 lib_obj = $(lib_src:.cpp=.o)
 
 src = $(main_src) $(lib_src)

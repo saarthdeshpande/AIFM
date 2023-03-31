@@ -3,7 +3,7 @@ extern "C" {
 }
 #include "thread.h"
 
-#include "array.hpp"
+//#include "array.hpp"
 #include "local_concurrent_hopscotch.hpp"
 //#include "deref_scope.hpp"
 //#include "device.hpp"
@@ -40,7 +40,7 @@ extern "C" {
 class FarMemTest {
 private:
     // FarMemManager.
-    constexpr static uint64_t kCacheSize = 30000 * Region::kSize;
+    constexpr static uint64_t kCacheSize = 30000 * uint64_t(1 << 20);
     constexpr static uint64_t kFarMemSize = (17ULL << 30); // 17 GB
     constexpr static uint32_t kNumGCThreads = 12;
     constexpr static uint32_t kNumConnections = 300;
@@ -58,7 +58,7 @@ private:
     constexpr static uint32_t kArrayEntrySize = 8192;     // 8 K
 
     // Runtime.
-    constexpr static uint32_t kNumMutatorThreads = 3;
+    constexpr static uint32_t kNumMutatorThreads = 2;
     constexpr static double kZipfParamS = 0.85;
     constexpr static uint32_t kNumKeysPerRequest = 32;
     constexpr static uint32_t kNumReqs = kNumKVPairs / kNumKeysPerRequest;

@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-namespace far_memory {
+//namespace far_memory {
 
 template <typename K, typename V>
 FORCE_INLINE
@@ -64,4 +64,4 @@ FORCE_INLINE LocalGenericConcurrentHopscotch::BucketEntry::BucketEntry() {
   bitmap = timestamp = 0;
   ptr = nullptr;
 }
-} // namespace far_memory
+//} // namespace far_memory
