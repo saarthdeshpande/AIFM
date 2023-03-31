@@ -1,4 +1,4 @@
-AIFM_PATH=../../../
+AIFM_PATH=../
 SHENANGO_PATH=$(AIFM_PATH)/../caladan-arkose
 ROOT_PATH=$(SHENANGO_PATH)
 include $(SHENANGO_PATH)/build/shared.mk
