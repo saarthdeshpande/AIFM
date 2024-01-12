@@ -97,7 +97,7 @@ private:
   std::unique_ptr<std::mt19937> generators[helpers::kNumCPUs];
   alignas(helpers::kHugepageSize) Req all_gen_reqs[kNumReqs];
   uint32_t all_zipf_req_indices[helpers::kNumCPUs][kReqSeqLen];
-  
+
   Cnt req_cnts[kNumMutatorThreads];
   Cnt local_array_miss_cnts[kNumMutatorThreads];
   Cnt local_hashtable_miss_cnts[kNumMutatorThreads];
