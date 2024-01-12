@@ -39,18 +39,18 @@ namespace far_memory {
 class FarMemTest {
 private:
   // FarMemManager.
-  constexpr static uint64_t kCacheSize = 563 * Region::kSize;
+  constexpr static uint64_t kCacheSize = 682 * Region::kSize;
   constexpr static uint64_t kFarMemSize = (17ULL << 30); // 17 GB
   constexpr static uint32_t kNumGCThreads = 12;
   constexpr static uint32_t kNumConnections = 300;
 
   // Hashtable.
   constexpr static uint32_t kKeyLen = 12;
-  constexpr static uint32_t kValueLen = 4;
-  constexpr static uint32_t kLocalHashTableNumEntriesShift = 25;
+  constexpr static uint32_t kValueLen = 100;
+  constexpr static uint32_t kLocalHashTableNumEntriesShift = 26;
   constexpr static uint32_t kRemoteHashTableNumEntriesShift = 28;
   constexpr static uint64_t kRemoteHashTableSlabSize = (4ULL << 30) * 1.5;
-  constexpr static uint32_t kNumKVPairs = 1 << 27;
+  constexpr static uint32_t kNumKVPairs = 1 << 25;
 
   // Array.
   constexpr static uint32_t kNumArrayEntries = 2 << 20; // 2 M entries.
@@ -304,7 +304,7 @@ private:
             std::cout << "hashtable miss val len = "
                       << accumulate(hashtable_miss_val_len_records.begin(),
                                     hashtable_miss_val_len_records.end(), 0.0) /
-                         hashtable_miss_rate_records.size()
+                         hashtable_miss_val_len_records.size()
                       << std::endl;
           std::cout << "array miss rate = "
                     << accumulate(array_miss_rate_records.begin(),
@@ -314,7 +314,7 @@ private:
           std::cout << "array miss val len = "
                       << accumulate(array_miss_val_len_records.begin(),
                                     array_miss_val_len_records.end(), 0.0) /
-                         array_miss_rate_records.size()
+                         array_miss_val_len_records.size()
                       << std::endl;
           exit(0);
         }
