@@ -49,7 +49,7 @@ private:
   constexpr static uint32_t kValueLen = 4;
   constexpr static uint32_t kLocalHashTableNumEntriesShift = 25;
   constexpr static uint32_t kRemoteHashTableNumEntriesShift = 28;
-  constexpr static uint64_t kRemoteHashTableSlabSize = (4ULL << 30) * 1.05;
+  constexpr static uint64_t kRemoteHashTableSlabSize = (4ULL << 30) * 1.5;
   constexpr static uint32_t kNumKVPairs = 1 << 27;
 
   // Array.
@@ -97,10 +97,12 @@ private:
   std::unique_ptr<std::mt19937> generators[helpers::kNumCPUs];
   alignas(helpers::kHugepageSize) Req all_gen_reqs[kNumReqs];
   uint32_t all_zipf_req_indices[helpers::kNumCPUs][kReqSeqLen];
-
+  
   Cnt req_cnts[kNumMutatorThreads];
   Cnt local_array_miss_cnts[kNumMutatorThreads];
+  Cnt array_miss_val_len[kNumMutatorThreads];
   Cnt local_hashtable_miss_cnts[kNumMutatorThreads];
+  Cnt hashtable_miss_val_len[kNumMutatorThreads];
   Cnt per_core_req_idx[helpers::kNumCPUs];
 
   std::atomic_flag flag;
@@ -108,11 +110,15 @@ private:
   uint64_t prev_sum_reqs = 0;
   uint64_t prev_sum_array_misses = 0;
   uint64_t prev_sum_hashtable_misses = 0;
+  uint64_t prev_sum_array_miss_val_len = 0;
+  uint64_t prev_sum_hashtable_miss_val_len = 0;
   uint64_t prev_us = 0;
   uint64_t running_us = 0;
   std::vector<double> mops_records;
   std::vector<double> hashtable_miss_rate_records;
+  std::vector<double> hashtable_miss_val_len_records;
   std::vector<double> array_miss_rate_records;
+  std::vector<double> array_miss_val_len_records;
 
   unsigned char key[CryptoPP::AES::DEFAULT_KEYLENGTH];
   unsigned char iv[CryptoPP::AES::BLOCKSIZE];
@@ -235,24 +241,36 @@ private:
       auto us = microtime();
       uint64_t sum_reqs = 0;
       uint64_t sum_hashtable_misses = 0;
+      uint64_t sum_hashtable_miss_val_len = 0;
       uint64_t sum_array_misses = 0;
+      uint64_t sum_array_miss_val_len = 0;
       for (uint32_t i = 0; i < kNumMutatorThreads; i++) {
         sum_reqs += ACCESS_ONCE(req_cnts[i].c);
         sum_hashtable_misses += ACCESS_ONCE(local_hashtable_miss_cnts[i].c);
+        sum_hashtable_miss_val_len += ACCESS_ONCE(hashtable_miss_val_len[i].c);
         sum_array_misses += ACCESS_ONCE(local_array_miss_cnts[i].c);
+        sum_array_miss_val_len += ACCESS_ONCE(array_miss_val_len[i].c);
       }
       if (us - prev_us > kMaxPrintIntervalUs) {
         auto mops =
             ((double)(sum_reqs - prev_sum_reqs) / (us - prev_us)) * 1.098;
-        auto hashtable_miss_rate =
-            (double)(sum_hashtable_misses - prev_sum_hashtable_misses) /
+        auto hashtable_miss_val_len =
+            (double)(sum_hashtable_miss_val_len - prev_sum_hashtable_miss_val_len) /
             (kNumKeysPerRequest * (sum_reqs - prev_sum_reqs));
+          auto hashtable_miss_rate =
+                  (double)(sum_hashtable_misses - prev_sum_hashtable_misses) /
+                  (kNumKeysPerRequest * (sum_reqs - prev_sum_reqs));
         auto array_miss_rate =
             (double)(sum_array_misses - prev_sum_array_misses) /
             (sum_reqs - prev_sum_reqs);
+        auto array_miss_val_len =
+                (double) (sum_array_miss_val_len - prev_sum_array_miss_val_len) /
+                        (sum_reqs - prev_sum_reqs);
         mops_records.push_back(mops);
         hashtable_miss_rate_records.push_back(hashtable_miss_rate);
+        hashtable_miss_val_len_records.push_back(hashtable_miss_val_len);
         array_miss_rate_records.push_back(array_miss_rate);
+        array_miss_val_len_records.push_back(array_miss_val_len);
         us = microtime();
         running_us += (us - prev_us);
         if (print_times++ >= kPrintTimes) {
@@ -264,9 +282,15 @@ private:
           hashtable_miss_rate_records.erase(hashtable_miss_rate_records.begin(),
                                             hashtable_miss_rate_records.end() -
                                                 num_chosen_records);
+          hashtable_miss_val_len_records.erase(hashtable_miss_val_len_records.begin(),
+                                                 hashtable_miss_val_len_records.end() -
+                                              num_chosen_records);
           array_miss_rate_records.erase(array_miss_rate_records.begin(),
                                         array_miss_rate_records.end() -
                                             num_chosen_records);
+          array_miss_val_len_records.erase(array_miss_val_len_records.begin(),
+                                           array_miss_val_len_records.end() -
+                                          num_chosen_records);
           std::cout << "mops = "
                     << accumulate(mops_records.begin(), mops_records.end(),
                                   0.0) /
@@ -277,17 +301,29 @@ private:
                                   hashtable_miss_rate_records.end(), 0.0) /
                            hashtable_miss_rate_records.size()
                     << std::endl;
+            std::cout << "hashtable miss val len = "
+                      << accumulate(hashtable_miss_val_len_records.begin(),
+                                    hashtable_miss_val_len_records.end(), 0.0) /
+                         hashtable_miss_rate_records.size()
+                      << std::endl;
           std::cout << "array miss rate = "
                     << accumulate(array_miss_rate_records.begin(),
                                   array_miss_rate_records.end(), 0.0) /
                            array_miss_rate_records.size()
                     << std::endl;
+          std::cout << "array miss val len = "
+                      << accumulate(array_miss_val_len_records.begin(),
+                                    array_miss_val_len_records.end(), 0.0) /
+                         array_miss_rate_records.size()
+                      << std::endl;
           exit(0);
         }
         prev_us = us;
         prev_sum_reqs = sum_reqs;
         prev_sum_array_misses = sum_array_misses;
         prev_sum_hashtable_misses = sum_hashtable_misses;
+        prev_sum_array_miss_val_len = sum_array_miss_val_len;
+        prev_sum_hashtable_miss_val_len = sum_hashtable_miss_val_len;
       }
       preempt_enable();
       flag.clear();
@@ -330,6 +366,9 @@ private:
               hopscotch->_get(kKeyLen, (const uint8_t *)key.data,
                               &value_len, (uint8_t *)value.data, &forwarded);
               ACCESS_ONCE(local_hashtable_miss_cnts[tid].c) += forwarded;
+              if (forwarded) {
+                  hashtable_miss_val_len[tid].c += value_len;
+              }
               array_index += value.num;
             }
           }
@@ -338,8 +377,12 @@ private:
             DerefScope scope;
             ACCESS_ONCE(local_array_miss_cnts[tid].c) +=
                 !array->ptrs_[array_index].meta().is_present();
+
             const auto &array_entry =
                 array->at</* NT = */ true>(scope, array_index);
+              if (!array->ptrs_[array_index].meta().is_present()) {
+                  array_miss_val_len[tid].c += sizeof(array_entry);
+              }
             preempt_disable();
             consume_array_entry(array_entry);
             preempt_enable();
