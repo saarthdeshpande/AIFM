@@ -377,7 +377,7 @@ private:
             DerefScope scope;
             ACCESS_ONCE(local_array_miss_cnts[tid].c) +=
                 !array->ptrs_[array_index].meta().is_present();
-            const isArrayRemoteAccess = !array->ptrs_[array_index].meta().is_present();
+            const int isArrayRemoteAccess = !array->ptrs_[array_index].meta().is_present();
             const auto &array_entry =
                 array->at</* NT = */ true>(scope, array_index);
               if (isArrayRemoteAccess) {
